@@ -23,6 +23,12 @@ print('Lines in JSON file:', count+1)
 #        ipcount[lines[currententry]['ip_str']]=internalcount
 #    currententry=currententry+1
 #print(ipcount)
+
+for result in lines:
+    print(result['ip_str'])
+    for resultOne in result['vulns']:
+        print(result['vulns'][resultOne]['cvss'])
+
 cves=[]
 currententry=0
 while currententry<count+1:
@@ -45,4 +51,4 @@ while currententry<len(cves):
             intenalcount=intenalcount+1
         #print(cves[currententry]['vulns'])
     currententry=currententry+1
-print(cvescounter)
+#print(cvescounter)
