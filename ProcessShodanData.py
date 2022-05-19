@@ -8,47 +8,56 @@ with open('stofa.json') as file:
         lines.append(json.loads(line.strip()))
         pass
 
-print('Lines in JSON file:', count+1)
+#print('Lines in JSON file:', count+1)
 
-#ipcount=dict()
-#currententry=1
-#ipcount[lines[0]['ip_str']]=1
-#while currententry<count+1:
-#    internalcount=1
-#    internalentry=0
-#    while internalentry<currententry:
-#        if lines[internalentry]['ip_str'].__eq__(lines[currententry]['ip_str']):
-#            internalcount=internalcount+1
-#        internalentry=internalentry+1
-#        ipcount[lines[currententry]['ip_str']]=internalcount
-#    currententry=currententry+1
-#print(ipcount)
+#Proberly starts a HTML5 file
+html='<!DOCTYPE html><html><head><title>Shodan data results</title><style>body{background:#333;color:#eee;}div{float:left;width:1000px;}div div{width:300px;}td{padding:2px;}</style></head><body><div>'
 
+#Creates a table of all IPs with all vulnerabilities with thier CVE kode and the CVSS score the CVE kode have received
+html=html+'<h2>List of all IPs with all vulnerabilities and thier CVE kode</h2><table><tr><td>IP</td><td>CVE</td><td>CVSS</td></tr>'
 for result in lines:
-    print(result['ip_str'])
-    for resultOne in result['vulns']:
-        print(result['vulns'][resultOne]['cvss'])
+    first=True
+    for vuln in result['vulns']:
+        if first:
+            html=html+'<tr><td>'+result['ip_str']+'</td><td>'+vuln+'</td><td>'+str(result['vulns'][vuln]['cvss'])+'</td></tr>'
+            first=False
+        else:
+            html=html+'<tr><td></td><td>'+vuln+'</td><td>'+str(result['vulns'][vuln]['cvss'])+'</td></tr>'
+html=html+'</table></div>'
 
-cves=[]
-currententry=0
-while currententry<count+1:
-    if len(lines[currententry]['opts'])!=0:#When printing out an empty opts out in CLI it will appeare as the content is "{}" but it is at zero character string.
-        if "vulns" in lines[currententry]['opts']:
-            cves.append(lines[currententry]['opts'])
-    currententry=currententry+1
+#Creates a table with all IPs with the vulnerability with the highest CVSS score
+html=html+'<div><h2>List of all IPs with the vulnerability with the highest CVSS score</h2><table><tr><td>IP</td><td>CVE</td><td>CVSS</td></tr>'
+for result in lines:
+    cve=""
+    cvss=0.0
+    first=True
+    #Goes through all vulnerabilities to find the CVE with the highest CVSS score. Thier are a Python function to sort dictionaries but the sort functions does not work with stings as key.
+    for vuln in result['vulns']:
+        if float(result['vulns'][vuln]['cvss'])>cvss:
+            cvss=float(result['vulns'][vuln]['cvss'])
+            cve=vuln
+    html=html+'<tr><td>'+result['ip_str']+'</td><td>'+cve+'</td><td>'+str(cvss)+'</td></tr>'
 
-cvescounter=dict()
-currententry=0
-while currententry<len(cves):
-    if len(cves[currententry]['vulns'])!=0:
-        intenalcount=0
-        while intenalcount<len(cves[currententry]['vulns']):
-            #print(cves[currententry]['vulns'][intenalcount])
-            if cves[currententry]['vulns'][intenalcount] in cvescounter:
-                cvescounter[cves[currententry]['vulns'][intenalcount]]=cvescounter[cves[currententry]['vulns'][intenalcount]]+1
-            else:
-                cvescounter[cves[currententry]['vulns'][intenalcount]]=1
-            intenalcount=intenalcount+1
-        #print(cves[currententry]['vulns'])
-    currententry=currententry+1
-#print(cvescounter)
+html=html+'</table></div>'
+
+#Creates a table that list how many times a given CVE appears in the dataset.
+html=html+'<div><h2>List of all CVEs in processed datasat and how many time they appears in with the dataset</h2><span>Lines in JSON file:'+str((count+1))+'</span><br/><br/><table><tr><td>CVE</td><td>Times</td></tr>'
+cvedict=dict()
+#Count number of times each vulnerability appears.
+for result in lines:
+    for vuln in result['vulns']:
+        if vuln in cvedict:
+            cvedict[vuln]=cvedict[vuln]+1
+        else:
+            cvedict[vuln]=1
+#Lists the count.
+for cve in cvedict:
+    html=html+'<tr><td>'+cve+'</td><td>'+str(cvedict[cve])+'</td></tr>'
+html=html+'</table>'
+
+#Proberly ends a HTML file
+html=html+'</div></table></div>'
+
+#Writes result to a HTML file
+file=open("result.html","w")
+file.write(html)
