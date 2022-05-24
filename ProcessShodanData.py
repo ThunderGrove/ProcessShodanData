@@ -8,8 +8,6 @@ with open('stofa.json') as file:
         lines.append(json.loads(line.strip()))
         pass
 
-#print('Lines in JSON file:', count+1)
-
 #Proberly starts a HTML5 file
 html='<!DOCTYPE html><html><head><title>Shodan data results</title><style>body{background:#333;color:#eee;}div{float:left;width:1000px;}div div{width:300px;}td{padding:2px;}</style></head><body><div>'
 
@@ -37,7 +35,6 @@ for result in lines:
             cvss=float(result['vulns'][vuln]['cvss'])
             cve=vuln
     html=html+'<tr><td>'+result['ip_str']+'</td><td>'+cve+'</td><td>'+str(cvss)+'</td></tr>'
-
 html=html+'</table></div>'
 
 #Creates a table that list how many times a given CVE appears in the dataset.
@@ -56,7 +53,7 @@ for cve in cvedict:
 html=html+'</table>'
 
 #Proberly ends a HTML file
-html=html+'</div></table></div>'
+html=html+'</div></body></html>'
 
 #Writes result to a HTML file
 file=open("result.html","w")
